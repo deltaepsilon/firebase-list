@@ -85,7 +85,7 @@ body {
       if (app.pageSize >= 100) {
         alert('Page size is maxed out.');
       }
-      app.pageSize = Math.min(100, app.pageSize + 5);
+      app.pageSize = Math.min(100, app.pageSize + 1);
     };
     app.refresh = function() {
       app.page = 1;
