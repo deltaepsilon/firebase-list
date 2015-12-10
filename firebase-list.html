@@ -1,0 +1,150 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../firebase-element/firebase-collection.html">
+<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <firebase-list></firebase-list>
+
+@group Seed Elements
+@element firebase-list
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="firebase-list">
+  <template>
+    <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+    </style>
+    <iron-ajax id="keys" auto handle-as="json" on-response="setKeys" last-response="{{keysResponse}}" params="{{_params}}"></iron-ajax>
+    <content id="content"></content>
+  </template>
+</dom-module>
+<script>
+Polymer({
+
+  is: 'firebase-list',
+
+  behaviors: [Polymer.IronResizableBehavior],
+
+  properties: {
+    pageSize: {
+      type: Number,
+      value: 100,
+      observer: 'refreshData'
+    },
+
+    page: {
+      type: Number,
+      value: 1,
+      notify: true,
+      reflectToAttribute: true,
+      observer: 'refreshData'
+    },
+
+    /*
+     * Page count as computed with page and pageSize
+     */
+    pageCount: {
+      type: Number,
+      notify: true,
+      reflectToAttribute: true,
+      computed: '_getPageCount(keys, pageSize)'
+    },
+
+    /*
+     * The shallow list of collection keys
+     */
+    keys: {
+      type: Object,
+      notify: true,
+      observer: 'refreshData'
+    },
+
+    _params: {
+      type: Object,
+      computed: '_getParams(_time)'
+    },
+
+    _time: {
+      type: Number,
+      value: new Date().getTime()
+    }
+
+  },
+
+
+  attached: function() {
+    var _this = this;
+    var timer;
+
+    this.collection = this.querySelector('firebase-collection');
+
+    this.collection.addEventListener('query-changed', function() {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(function () {
+        _this.refreshKeys();
+      }, 500);
+    });
+
+    this.collection.orderByKey = true;
+  },
+
+  /*
+   * Refresh the shallow list of keys for the collection
+   * This gets called every time the query changes, debounced to 500ms
+   */
+  refreshKeys: function() {
+    this.$.keys.url = this.collection.location + '.json';
+    this._time = new Date().getTime();
+  },
+
+  /*
+   * Set 'keys', and 'pageCount' based on the latest keys
+   */
+  setKeys: function(data) {
+    this.keys = Object.keys(this.keysResponse).sort();
+  },
+
+  /*
+   * Updates collection based on existing keys, page and pageSize
+   */
+  refreshData: function() {
+    if (this.keys && this.keys.length) {
+      var nextIndex = this.keys[this.keys.length - (this.page * this.pageSize)];
+      this.collection.startAt = nextIndex;
+      this.collection.limitToFirst = this.pageSize;
+    }
+  },
+
+  _getParams: function (time) {
+    return {
+      shallow: true,
+      timestamp: time
+    }
+  },
+
+  _getPageCount: function (keys, pageSize) {
+    return Math.ceil(keys.length / pageSize);
+  }
+
+});
+</script>
