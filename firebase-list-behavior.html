@@ -1,0 +1,108 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<script>
+(function(window) {
+  'use strict';
+
+  if (!window.Quiver) {
+    window.Quiver = {};
+  }
+
+  window.Quiver.FirebaseListBehavior = {
+    properties: {
+      page: {
+        type: Number,
+        value: 1,
+        reflectToAttribute: true
+      },
+
+      pageSize: {
+        type: Number,
+        value: 10,
+        reflectToAttribute: true
+      },
+
+      pageCount: {
+        type: Number
+      },
+
+      maxPageSize: {
+        type: Number,
+        value: 100,
+        reflectToAttribute: true
+      },
+
+      pageSizeIncrement: {
+        type: Number,
+        value: 1,
+        reflectToAttribute: true
+      },
+
+      itemCount: {
+        type: Number,
+        reflectToAttribute: true
+      },
+
+      reversed: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+
+      keys: Object,
+
+      _startingPageSize: Number
+    },
+
+    attached: function () {
+      this._startingPageSize = this.pageSize;
+    },
+
+    nextPage: function() {
+      this.page = Math.min(this.pageCount, this.page + 1);
+    },
+
+    prevPage: function() {
+      this.page = Math.max(1, this.page - 1);
+    },
+
+    add: function() {
+      if (this.pageSize >= this.maxPageSize) {
+        this.fire('page-max');
+      }
+      this.pageSize = Math.min(this.maxPageSize, this.pageSize + this.pageSizeIncrement);
+    },
+
+    refresh: function(pageSize) {
+      this.page = 1;
+      this.pageSize = typeof pageSize === 'number' ? pageSize : this._startingPageSize;
+    },
+
+    getIndex: function(key) {
+      if (this.keys && this.keys.length) {
+        return this.keys.indexOf(key) + 1;  
+      }
+    },
+
+    reverse: function(targetName, array) {
+      var reversed = (array || []).slice().reverse();
+      var args = [
+        targetName,
+        0,
+        this[targetName] ? this[targetName].length : 0
+      ].concat(reversed);
+
+      this.splice.apply(this, args);
+    }
+
+  }
+})(window);
+</script>

@@ -13,32 +13,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <!--
-An element providing a solution to no problem in particular.
+A wrapper element for a firebase-collection, usually paired with an iron-list, that implements bottom-up pagination.
 
-Example:
+Import firebase-list-behavior.html to add Quiver.FirebaseListBehavior to your parent elements. 
 
-    <firebase-list style="height: calc(100vh - 10rem);" page-size="{{ pageSize }}" page="{{ page }}" page-count="{{ pageCount }}">
-      <firebase-collection id="collection" location="https://publicdata-earthquakes.firebaseio.com/by_continent/north_america/-1" data="{{items}}" limit-to-first="1"></firebase-collection>
-      <iron-list items="{{items}}" as="item" style="height: 100%;">
-        <template>
-          <div>
-            <paper-material elevation="1" style="padding: 1rem; margin: 1rem;">
-              <div>
-                <strong>[[item.__firebaseKey__]]</strong>
-              </div>
-              <div>
-                <strong>Time:</strong>
-                <span is="date-time" time="[[item.time]]"></span>
-              </div>
-              <div>
-                <strong>Place:</strong>
-                <span>[[item.place]]</span>
-              </div>
-            </paper-material>
-          </div>
-        </template>
-      </iron-list>
-    </firebase-list>
+Quiver.FirebaseListBehavior provides useful default properties and methods for using a firebase-list.
+
+Example with full implementation of Quiver.FirebaseListBehavior:
+
+      <firebase-list style="height: calc(100vh - 10rem);" page-size="{{ pageSize }}" page="{{ page }}" page-count="{{ pageCount }}" keys="{{ keys }}">
+        <firebase-collection id="collection" location="https://publicdata-earthquakes.firebaseio.com/by_continent/north_america/-1" data="{{items}}" limit-to-first="1"></firebase-collection>
+        <iron-list items="{{reversed}}" as="item" style="height: 100%;">
+          <template>
+            <div>
+              <paper-material elevation="1" style="padding: 1rem; margin: 1rem;">
+                <div>
+                  <strong>[[getIndex(item.__firebaseKey__)]]: [[item.__firebaseKey__]]</strong>
+                </div>
+                <div>
+                  <strong>Time:</strong>
+                  <span is="date-time" time="[[item.time]]"></span>
+                </div>
+                <div>
+                  <strong>Place:</strong>
+                  <span>[[item.place]]</span>
+                </div>
+              </paper-material>
+            </div>
+          </template>
+        </iron-list>
+      </firebase-list>
 
 @group Seed Elements
 @element firebase-list
@@ -69,6 +73,8 @@ Polymer({
     pageSize: {
       type: Number,
       value: 100,
+      notify: true,
+      reflectToAttribute: true,
       observer: 'refreshData'
     },
 
@@ -123,6 +129,10 @@ Polymer({
 
   },
 
+  ready: function () {
+    console.log('this.page', this.page);
+  },
+
 
   attached: function() {
     var _this = this;
@@ -134,7 +144,7 @@ Polymer({
       if (timer) {
         clearTimeout(timer);
       }
-      timer = setTimeout(function () {
+      timer = setTimeout(function() {
         _this.querySelector('iron-list').fire('iron-resize');
         _this.refreshKeys();
       }, 500);
@@ -164,13 +174,14 @@ Polymer({
    */
   refreshData: function() {
     if (this.keys && this.keys.length) {
-      var nextIndex = this.keys[Math.max(0, this.keys.length - (this.page * this.pageSize))];
-      this.collection.startAt = nextIndex;
-      this.collection.limitToFirst = this.pageSize;
+      var nextIndex = this.keys.length - (this.page * this.pageSize);
+      var nextKey = this.keys[Math.max(0, nextIndex)];
+      this.collection.startAt = nextKey;
+      this.collection.limitToFirst = Math.min(this.pageSize, this.pageSize + nextIndex);
     }
   },
 
-  _getParams: function (time, token) {
+  _getParams: function(time, token) {
     return {
       shallow: true,
       timestamp: time,
@@ -178,11 +189,11 @@ Polymer({
     }
   },
 
-  _getPageCount: function (keys, pageSize) {
+  _getPageCount: function(keys, pageSize) {
     return Math.ceil(keys.length / pageSize);
   },
 
-  _getItemCount: function (keys) {
+  _getItemCount: function(keys) {
     return keys.length;
   }
 
