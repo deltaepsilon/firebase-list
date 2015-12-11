@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>firebase-list Demo</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../firebase-list.html">
+  <link rel="import" href="../firebase-list-behavior.html">
+  <link rel="import" href="../../paper-material/paper-material.html">
+  <link rel="import" href="../../paper-header-panel/paper-header-panel.html">
+  <link rel="import" href="../../paper-toolbar/paper-toolbar.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+</head>
+<style type="text/css">
+body {
+  font-family: 'Roboto', 'Noto', sans-serif;
+  @apply(--layout-fit);
+  @apply(--layout);
+  @apply(--layout-vertical);
+  overflow: hidden;
+  background: var(--paper-grey-50);
+}
+</style>
+
+<body unresolved>
+  <x-controller id="xController"></x-controller>
+  <dom-module id="x-controller">
+    <template>
+      <paper-icon-button class="middle" icon="arrow-back" on-click="clickHandler"></paper-icon-button>
+      <paper-icon-button class="middle" icon="arrow-forward" on-click="clickHandler"></paper-icon-button>
+      <paper-icon-button class="middle" icon="add" on-click="clickHandler"></paper-icon-button>
+      <paper-icon-button class="middle" icon="refresh" on-click="clickHandler"></paper-icon-button>
+      <paper-material elevation="1" style="padding: 1rem; height: calc(100vh - 10rem);">
+        <paper-header-panel class="flex">
+          <paper-toolbar class="medium-tall">
+            <div class="top title">North American Earthquakes: -1 Richter</div>
+            <div class="middle title">
+              Page: [[page]] / [[pageCount]] @ [[pageSize]]/page
+            </div>
+            <paper-icon-button class="middle" icon="arrow-back" on-click="prevPage"></paper-icon-button>
+            <paper-icon-button class="middle" icon="arrow-forward" on-click="nextPage"></paper-icon-button>
+            <paper-icon-button class="middle" icon="add" on-click="add"></paper-icon-button>
+            <paper-icon-button class="middle" icon="refresh" on-click="refresh"></paper-icon-button>
+          </paper-toolbar>
+          <div>
+            <firebase-list style="height: calc(100vh - 10rem);" page-size="{{ pageSize }}" page="{{ page }}" page-count="{{ pageCount }}" keys="{{ keys }}">
+              <firebase-collection id="collection" location="https://publicdata-earthquakes.firebaseio.com/by_continent/north_america/-1" data="{{items}}" limit-to-first="1"></firebase-collection>
+              <iron-list items="{{reversed}}" as="item" style="height: 100%;">
+                <template>
+                  <div>
+                    <paper-material elevation="1" style="padding: 1rem; margin: 1rem;">
+                      <div>
+                        <strong>[[getIndex(item.__firebaseKey__)]]: [[item.__firebaseKey__]]</strong>
+                      </div>
+                      <div>
+                        <strong>Time:</strong>
+                        <span is="date-time" time="[[item.time]]"></span>
+                      </div>
+                      <div>
+                        <strong>Place:</strong>
+                        <span>[[item.place]]</span>
+                      </div>
+                    </paper-material>
+                  </div>
+                </template>
+              </iron-list>
+            </firebase-list>
+          </div>
+        </paper-header-panel>
+      </paper-material>
+    </template>
+    <script type="text/javascript">
+    (function() {
+      Polymer({
+        is: 'x-controller',
+
+        behaviors: [Quiver.FirebaseListBehavior],
+
+        properties: {
+          items: {
+            type: Object,
+            notify: true
+          }
+        },
+
+        observers: [
+          'reverse("reversed", items, items.splices)'
+        ]
+      });
+
+      Polymer({
+        is: 'date-time',
+        extends: 'span',
+        properties: {
+          time: {
+            type: Number,
+            value: new Date().getTime()
+          },
+
+          _display: {
+            type: String,
+            computed: '_getDisplay(time)',
+            observer: '_setDisplay'
+          }
+        },
+
+        _getDisplay: function(time) {
+          return (new Date(time)).toString();
+        },
+
+        _setDisplay: function() {
+          this.textContent = this._display;
+        }
+      });
+    })();
+    </script>
+  </dom-module>
+</body>
+
+</html>

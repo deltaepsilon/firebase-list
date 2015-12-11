@@ -1,0 +1,201 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../firebase-element/firebase-collection.html">
+<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<!--
+A wrapper element for a firebase-collection, usually paired with an iron-list, that implements bottom-up pagination.
+
+Import firebase-list-behavior.html to add Quiver.FirebaseListBehavior to your parent elements. 
+
+Quiver.FirebaseListBehavior provides useful default properties and methods for using a firebase-list.
+
+Example with full implementation of Quiver.FirebaseListBehavior:
+
+      <firebase-list style="height: calc(100vh - 10rem);" page-size="{{ pageSize }}" page="{{ page }}" page-count="{{ pageCount }}" keys="{{ keys }}">
+        <firebase-collection id="collection" location="https://publicdata-earthquakes.firebaseio.com/by_continent/north_america/-1" data="{{items}}" limit-to-first="1"></firebase-collection>
+        <iron-list items="{{reversed}}" as="item" style="height: 100%;">
+          <template>
+            <div>
+              <paper-material elevation="1" style="padding: 1rem; margin: 1rem;">
+                <div>
+                  <strong>[[getIndex(item.__firebaseKey__)]]: [[item.__firebaseKey__]]</strong>
+                </div>
+                <div>
+                  <strong>Time:</strong>
+                  <span is="date-time" time="[[item.time]]"></span>
+                </div>
+                <div>
+                  <strong>Place:</strong>
+                  <span>[[item.place]]</span>
+                </div>
+              </paper-material>
+            </div>
+          </template>
+        </iron-list>
+      </firebase-list>
+
+@group Seed Elements
+@element firebase-list
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="firebase-list">
+  <template>
+    <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+      overflow: scroll;
+    }
+    </style>
+    <iron-ajax id="keys" auto handle-as="json" on-response="setKeys" last-response="{{keysResponse}}" params="{{_params}}"></iron-ajax>
+    <content id="content"></content>
+  </template>
+</dom-module>
+<script>
+Polymer({
+
+  is: 'firebase-list',
+
+  behaviors: [Polymer.IronResizableBehavior],
+
+  properties: {
+    pageSize: {
+      type: Number,
+      value: 100,
+      notify: true,
+      reflectToAttribute: true,
+      observer: 'refreshData'
+    },
+
+    page: {
+      type: Number,
+      value: 1,
+      notify: true,
+      reflectToAttribute: true,
+      observer: 'refreshData'
+    },
+
+    /*
+     * Page count as computed with page and pageSize
+     */
+    pageCount: {
+      type: Number,
+      notify: true,
+      reflectToAttribute: true,
+      computed: '_getPageCount(keys, pageSize)'
+    },
+
+    itemCount: {
+      type: Number,
+      notify: true,
+      reflectToAttribute: true,
+      computed: '_getItemCount(keys)'
+    },
+
+    /*
+     * User token for secured routes
+     */
+    token: String,
+
+    /*
+     * The shallow list of collection keys
+     */
+    keys: {
+      type: Object,
+      notify: true,
+      observer: 'refreshData'
+    },
+
+    _params: {
+      type: Object,
+      computed: '_getParams(_time, token)'
+    },
+
+    _time: {
+      type: Number,
+      value: new Date().getTime()
+    }
+
+  },
+
+  ready: function () {
+    console.log('this.page', this.page);
+  },
+
+
+  attached: function() {
+    var _this = this;
+    var timer;
+
+    this.collection = this.querySelector('firebase-collection');
+
+    this.collection.addEventListener('query-changed', function() {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(function() {
+        _this.querySelector('iron-list').fire('iron-resize');
+        _this.refreshKeys();
+      }, 500);
+    });
+
+    this.collection.orderByKey = true;
+  },
+
+  /*
+   * Refresh the shallow list of keys for the collection
+   * This gets called every time the query changes, debounced to 500ms
+   */
+  refreshKeys: function() {
+    this.$.keys.url = this.collection.location + '.json';
+    this._time = new Date().getTime();
+  },
+
+  /*
+   * Set 'keys', and 'pageCount' based on the latest keys
+   */
+  setKeys: function(data) {
+    this.keys = Object.keys(this.keysResponse).sort();
+  },
+
+  /*
+   * Updates collection based on existing keys, page and pageSize
+   */
+  refreshData: function() {
+    if (this.keys && this.keys.length) {
+      var nextIndex = this.keys.length - (this.page * this.pageSize);
+      var nextKey = this.keys[Math.max(0, nextIndex)];
+      this.collection.startAt = nextKey;
+      this.collection.limitToFirst = Math.min(this.pageSize, this.pageSize + nextIndex);
+    }
+  },
+
+  _getParams: function(time, token) {
+    return {
+      shallow: true,
+      timestamp: time,
+      auth: token
+    }
+  },
+
+  _getPageCount: function(keys, pageSize) {
+    return Math.ceil(keys.length / pageSize);
+  },
+
+  _getItemCount: function(keys) {
+    return keys.length;
+  }
+
+});
+</script>
