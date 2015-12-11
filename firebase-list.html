@@ -90,6 +90,11 @@ Polymer({
     },
 
     /*
+     * User token for secured routes
+     */
+    token: String,
+
+    /*
      * The shallow list of collection keys
      */
     keys: {
@@ -100,7 +105,7 @@ Polymer({
 
     _params: {
       type: Object,
-      computed: '_getParams(_time)'
+      computed: '_getParams(_time, token)'
     },
 
     _time: {
@@ -150,16 +155,17 @@ Polymer({
    */
   refreshData: function() {
     if (this.keys && this.keys.length) {
-      var nextIndex = this.keys[this.keys.length - (this.page * this.pageSize)];
+      var nextIndex = this.keys[Math.max(0, this.keys.length - (this.page * this.pageSize))];
       this.collection.startAt = nextIndex;
       this.collection.limitToFirst = this.pageSize;
     }
   },
 
-  _getParams: function(time) {
+  _getParams: function(time, token) {
     return {
       shallow: true,
-      timestamp: time
+      timestamp: time,
+      auth: token
     }
   },
 
