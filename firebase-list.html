@@ -51,6 +51,7 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
+      overflow: scroll;
     }
     </style>
     <iron-ajax id="keys" auto handle-as="json" on-response="setKeys" last-response="{{keysResponse}}" params="{{_params}}"></iron-ajax>
@@ -87,6 +88,13 @@ Polymer({
       notify: true,
       reflectToAttribute: true,
       computed: '_getPageCount(keys, pageSize)'
+    },
+
+    itemCount: {
+      type: Number,
+      notify: true,
+      reflectToAttribute: true,
+      computed: '_getItemCount(keys)'
     },
 
     /*
@@ -126,7 +134,8 @@ Polymer({
       if (timer) {
         clearTimeout(timer);
       }
-      timer = setTimeout(function() {
+      timer = setTimeout(function () {
+        _this.querySelector('iron-list').fire('iron-resize');
         _this.refreshKeys();
       }, 500);
     });
@@ -161,7 +170,7 @@ Polymer({
     }
   },
 
-  _getParams: function(time, token) {
+  _getParams: function (time, token) {
     return {
       shallow: true,
       timestamp: time,
@@ -169,8 +178,12 @@ Polymer({
     }
   },
 
-  _getPageCount: function(keys, pageSize) {
+  _getPageCount: function (keys, pageSize) {
     return Math.ceil(keys.length / pageSize);
+  },
+
+  _getItemCount: function (keys) {
+    return keys.length;
   }
 
 });
