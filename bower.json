@@ -1,26 +1,26 @@
 {
   "name": "firebase-list",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "authors": [
-    "Anonymous <anonymous@example.com>"
+    "Chris Esplin <chris@quiver.is>"
   ],
-  "description": "An element providing a solution to no problem in particular.",
+  "description": "An infinite scrolls list and pagination element for Polymer + Firebase.",
   "keywords": [
     "web-component",
     "polymer",
-    "seed"
+    "firebase"
   ],
   "main": "firebase-list.html",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "homepage": "https://github.com/deltaepsilon/firebase-list/",
   "ignore": [
     "/.*",
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.1.0",
-    "iron-list": "PolymerElements/iron-list#~1.1.6",
-    "firebase-element": "GoogleWebComponents/firebase-element#~1.0.9",
+    "polymer": "~1.2.3",
+    "iron-list": "PolymerElements/iron-list#~1.1.7",
+    "firebase-element": "PolymerElements/firebase-element#~1.0.9",
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#~1.0.2",
     "iron-ajax": "PolymerElements/iron-ajax#~1.1.1"
   },

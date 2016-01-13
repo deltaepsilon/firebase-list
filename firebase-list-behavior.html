@@ -59,10 +59,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       keys: Object,
 
-      _startingPageSize: Number
+      _startingPageSize: Number,
+
+      _firstPage: {
+        type: Boolean,
+        computed: '_isFirstPage(page)'
+      },
+
+      _lastPage: {
+        type: Boolean,
+        computed: '_isLastPage(page)'
+      }
     },
 
-    attached: function () {
+    attached: function() {
       this._startingPageSize = this.pageSize;
     },
 
@@ -88,7 +98,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     getIndex: function(key) {
       if (this.keys && this.keys.length) {
-        return this.keys.indexOf(key) + 1;  
+        return this.keys.indexOf(key) + 1;
       }
     },
 
@@ -101,6 +111,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ].concat(reversed);
 
       this.splice.apply(this, args);
+    },
+
+    _isFirstPage: function(page) {
+      return page === 1;
+    },
+
+    _isLastPage: function(page) {
+      return page === this.pageCount;
     }
 
   }
