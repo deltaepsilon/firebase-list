@@ -161,7 +161,7 @@ Polymer({
    * Set 'keys', and 'pageCount' based on the latest keys
    */
   setKeys: function(data) {
-    this.keys = Object.keys(this.keysResponse).sort();
+    this.keys = this.keysResponse ? Object.keys(this.keysResponse).sort() : [];
   },
 
   /*
