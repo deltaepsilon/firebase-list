@@ -49,9 +49,9 @@ body {
             <div class="middle title">
               Page: [[page]] / [[pageCount]] @ [[pageSize]]/page
             </div>
-            <paper-icon-button class="middle" icon="arrow-back" on-click="prevPage" disabled$="{{ _firstPage }}"></paper-icon-button>
-            <paper-icon-button class="middle" icon="arrow-forward" on-click="nextPage" disabled$="{{ _lastPage }}"></paper-icon-button>
-            <paper-icon-button class="middle" icon="add" on-click="add"></paper-icon-button>
+            <paper-icon-button class="middle" icon="arrow-back" on-click="prevPage" disabled$="{{ isFirstPage }}"></paper-icon-button>
+            <paper-icon-button class="middle" icon="arrow-forward" on-click="nextPage" disabled$="{{ isLastPage }}"></paper-icon-button>
+            <paper-icon-button class="middle" icon="add" on-click="add" disabled$="{{ isLastPage }}"></paper-icon-button>
             <paper-icon-button class="middle" icon="refresh" on-click="refresh"></paper-icon-button>
           </paper-toolbar>
           <div>

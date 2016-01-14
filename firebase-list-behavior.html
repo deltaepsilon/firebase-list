@@ -40,6 +40,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         reflectToAttribute: true
       },
 
+      maxItems: {
+        type: Number,
+        computed: '_computeMaxItems(pageSize, itemCount)'
+      },
+
+      isFirstPage: {
+        type: Boolean,
+        computed: '_computeIsFirstPage(page)'
+      },
+
+      isLastPage: {
+        type: Boolean,
+        computed: '_computeIsLastPage(page, pageCount)'
+      },
+
       pageSizeIncrement: {
         type: Number,
         value: 1,
@@ -59,17 +74,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       keys: Object,
 
-      _startingPageSize: Number,
+      _startingPageSize: Number
 
-      _firstPage: {
-        type: Boolean,
-        computed: '_isFirstPage(page)'
-      },
-
-      _lastPage: {
-        type: Boolean,
-        computed: '_isLastPage(page, pageCount)'
-      }
     },
 
     attached: function() {
@@ -113,14 +119,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.splice.apply(this, args);
     },
 
-    _isFirstPage: function(page) {
+    _computeMaxItems: function(pageSize, itemCount) {
+      return Math.min(pageSize, itemCount);
+    },
+
+    _computeIsFirstPage: function(page) {
       return page === 1;
     },
 
-    _isLastPage: function(page, pageCount) {
+    _computeIsLastPage: function(page, pageCount) {
       return page === pageCount;
     }
-
   }
 })(window);
 </script>
