@@ -68,7 +68,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _lastPage: {
         type: Boolean,
-        computed: '_isLastPage(page)'
+        computed: '_isLastPage(page, pageCount)'
       }
     },
 
@@ -117,8 +117,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       return page === 1;
     },
 
-    _isLastPage: function(page) {
-      return page === this.pageCount;
+    _isLastPage: function(page, pageCount) {
+      return page === pageCount;
     }
 
   }
